@@ -13,8 +13,8 @@ RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
     echo "(async () => {await import('file:///app/napcat/napcat.mjs');})();" > /opt/QQ/resources/app/loadNapCat.js && \
     sed -i 's|"main": "[^"]*"|"main": "./loadNapCat.js"|' /opt/QQ/resources/app/package.json
 
-VOLUME /app/napcat/config
-VOLUME /app/.config/QQ
+# VOLUME /app/napcat/config
+# VOLUME /app/.config/QQ
 
 ENTRYPOINT ["bash", "entrypoint.sh"]
 
