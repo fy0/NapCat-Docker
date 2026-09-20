@@ -5,10 +5,15 @@ RUN useradd --no-log-init -d /app napcat
 WORKDIR /app
 
 COPY NapCat.Shell.zip entrypoint.sh templates /app/
-# 安装Linux QQ
+# 安装Linux QQ（带重试，外网可能不稳定）
 RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
-    curl -o linuxqq.deb https://dldir1.qq.com/qqfile/qq/QQNT/ec800879/linuxqq_3.2.20-40990_${arch}.deb && \
-    dpkg -i --force-depends linuxqq.deb && rm linuxqq.deb && \
+    QQ_URL="https://qqdl.gtimg.cn/qqfile/QQNT/9.9.35/beta/1763096b/linuxqq_3.2.33-52892_${arch}.deb" && \
+    echo "Downloading QQ from: ${QQ_URL}" && \
+    for i in 1 2 3 4 5; do \
+        curl --retry 3 --retry-delay 5 --connect-timeout 30 --max-time 300 -fL -o linuxqq.deb "${QQ_URL}" && break || \
+        (echo "Attempt $i failed, retrying in 10s..." && sleep 10); \
+    done && \
+    test -f linuxqq.deb && dpkg -i --force-depends linuxqq.deb && rm linuxqq.deb && \
     chmod +x entrypoint.sh && \
     echo "(async () => {await import('file:///app/napcat/napcat.mjs');})();" > /opt/QQ/resources/app/loadNapCat.js && \
     sed -i 's|"main": "[^"]*"|"main": "./loadNapCat.js"|' /opt/QQ/resources/app/package.json
