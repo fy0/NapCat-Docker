@@ -21,6 +21,7 @@ jobs:
             VERSION=$(curl -sSL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/NapNeko/NapCatQQ/releases/latest" | jq -r '.tag_name')
           fi
           echo "Building with NapCat $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_ENV"
           bash get_artifacts.sh ${{ secrets.GITHUB_TOKEN }} "$VERSION"
       - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v3
@@ -36,10 +37,14 @@ jobs:
           DOCKER_REPO: ghcr.io/${{ github.repository_owner }}/napcat-docker
           GITHUB_REPO: NapNeko/NapCatQQ
         run: |
+          TAGS="--tag ${DOCKER_REPO}:${{ env.version }}"
+          if [ -z "${{ inputs.napcat_version }}" ]; then
+            TAGS="$TAGS --tag ${DOCKER_REPO}:edge"
+          fi
           docker buildx build \
             --output "type=image,push=true" \
             --platform linux/amd64,linux/arm64 \
-            --tag ${DOCKER_REPO}:edge \
+            ${TAGS} \
             --file ./Dockerfile \
             .
       - name: GHCR logout
