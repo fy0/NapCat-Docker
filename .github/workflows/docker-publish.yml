@@ -2,6 +2,11 @@ name: docker-publish
 
 on:
   workflow_dispatch:
+    inputs:
+      napcat_version:
+        description: 'NapCatQQ release tag（留空则取 latest）'
+        required: false
+        default: ''
 
 jobs:
   publish-dockerhub:
@@ -11,7 +16,12 @@ jobs:
         uses: actions/checkout@v4
       - name: Get artifacts
         run: |
-          bash get_artifacts.sh ${{ secrets.GITHUB_TOKEN }} $(curl -sSL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/NapNeko/NapCatQQ/releases/latest" | jq -r '.tag_name')
+          VERSION="${{ inputs.napcat_version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(curl -sSL -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/NapNeko/NapCatQQ/releases/latest" | jq -r '.tag_name')
+          fi
+          echo "Building with NapCat $VERSION"
+          bash get_artifacts.sh ${{ secrets.GITHUB_TOKEN }} "$VERSION"
       - name: Set up Docker buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to GitHub Container Registry
