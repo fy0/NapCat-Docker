@@ -7,7 +7,7 @@ WORKDIR /app
 COPY NapCat.Shell.zip entrypoint.sh templates /app/
 # 安装Linux QQ（带重试，外网可能不稳定）
 RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
-    QQ_URL="https://qqdl.gtimg.cn/qqfile/QQNT/9.9.35/beta/1763096b/linuxqq_3.2.33-52892_${arch}.deb" && \
+    QQ_URL="https://github.com/zydou/QQ-Linux/releases/download/3.2.26-260311/QQ-3.2.26-260311-${arch}.deb" && \
     echo "Downloading QQ from: ${QQ_URL}" && \
     for i in 1 2 3 4 5; do \
         curl --retry 3 --retry-delay 5 --connect-timeout 30 --max-time 300 -fL -o linuxqq.deb "${QQ_URL}" && break || \
